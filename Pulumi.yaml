@@ -1,0 +1,7 @@
+name: VPC
+runtime:
+  name: python
+  options:
+    virtualenv: venv
+description: simple VPC with two subnets with two private and two public instances
+  in each
