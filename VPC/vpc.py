@@ -1,7 +1,7 @@
-import pulumi
+import pulumi,ipaddress
 import pulumi_aws as aws 
 from pulumi_aws import get_availability_zones
-import ipaddress
+from nat import Create_nat
 
 
 
@@ -22,6 +22,16 @@ def Createvpc(name, az = 2, cidr_block='10.0.0.0/16'):
     
     pulumi.export("vpc arn", vpc.arn)
     pulumi.export("id", vpc.id)
+    
+    #internet gateway
+    igw = aws.ec2.InternetGateway(f'{name}-igw',
+                              vpc_id=vpc.id,
+                              tags={'Name': f'{name}-IGW'}
+                              )
+    
+    #nat gateway
+    Create_nat(name= name,subnet_id=publicID)
+    
     #ID for subnets
     privateID = []
     publicID = []
@@ -53,17 +63,29 @@ def Createvpc(name, az = 2, cidr_block='10.0.0.0/16'):
         privateID.append(private_subnet.id)
     
     
-    #route table for private subnets NOT DONE
-    # route = aws.ec2.RouteTable(f"{name}",
-    #                            vpc_id = vpc.id,
-    #                            route=[
-    #                                aws.ec2.RouteTableRouteArgs(
-    #                                    cidr_block= []
-    #                                )
-    #                            ],
-    #                            tags = {
-    #                                "Name": f"{name}-private-rt"
-    #                            })
+    # route table for private subnets NOT DONE
+    rt_private = aws.ec2.RouteTable(f"{name}",
+                               vpc_id = vpc.id,
+                               route=[
+                                   aws.ec2.RouteTableRouteArgs(
+                                       cidr_block= "0.0.0.0/0",
+                                       gateway_id= ""
+                                   )
+                               ],
+                               tags = {
+                                   "Name": f"{name}-private-rt"
+                               })
+    rt_public = aws.ec2.RouteTable(f"{name}",
+                               vpc_id = vpc.id,
+                               route=[
+                                   aws.ec2.RouteTableRouteArgs(
+                                       cidr_block= "0.0.0.0/0",
+                                       gateway_id= igw.id
+                                   )
+                               ],
+                               tags = {
+                                   "Name": f"{name}-public-rt"
+                               })
     
         
     
