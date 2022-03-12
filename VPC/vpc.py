@@ -1,7 +1,7 @@
 import pulumi,ipaddress
 import pulumi_aws as aws 
 from pulumi_aws import get_availability_zones
-from nat import Create_nat
+from .nat import Create_nat
 
 
 
@@ -29,23 +29,23 @@ def Createvpc(name, az = 2, cidr_block='10.0.0.0/16'):
                               tags={'Name': f'{name}-IGW'}
                               )
     
-    #nat gateway
-    Create_nat(name= name,subnet_id=publicID)
     
     #ID for subnets
     privateID = []
     publicID = []
     
+    
+    
     #create subnets
     for n in range(az):
-        #publci subnet 
+        #public subnet 
         public_subnet = aws.ec2.Subnet(f"{name}-public-{n}",
             vpc_id = vpc.id,
             availability_zone= available[n],
             cidr_block= str(subnet[n]),
             map_public_ip_on_launch= True,
             tags={
-                "Name": f"Public Subnet-{name}-{n}",
+                "Name": f"{name}-Public-Subnet-{n}",
                 "AZ": f"{available[n]}"
             }
             )
@@ -55,29 +55,36 @@ def Createvpc(name, az = 2, cidr_block='10.0.0.0/16'):
             availability_zone= available[n],
             cidr_block= str(subnet[n+len(available)]),
             tags={
-                "Name": f"Private Subnet-{name}-{n}",
+                "Name": f"{name}-Private-Subnet-{n}",
                 "AZ": f"{available[n]}"
             }
             )
         publicID.append(public_subnet.id)
         privateID.append(private_subnet.id)
     
+    #nat gateway
+    nat_id = Create_nat(name= name,subnet_id=publicID)
     
-    # route table for private subnets NOT DONE
-    rt_private = aws.ec2.RouteTable(f"{name}",
+    for num in range(az):     
+        rt_private = aws.ec2.RouteTable(f"{name}-private-rt-{num}",
                                vpc_id = vpc.id,
-                               route=[
+                               routes=[
                                    aws.ec2.RouteTableRouteArgs(
                                        cidr_block= "0.0.0.0/0",
-                                       gateway_id= ""
+                                       nat_gateway_id= nat_id[num]
                                    )
                                ],
                                tags = {
                                    "Name": f"{name}-private-rt"
                                })
-    rt_public = aws.ec2.RouteTable(f"{name}",
+        rt_private_association= aws.ec2.RouteTableAssociation(
+            f"{name}-private-rt-association-{num}",
+            route_table_id=rt_private.id,
+            subnet_id= privateID[num]
+        )
+        rt_public = aws.ec2.RouteTable(f"{name}-public-rt-{num}",
                                vpc_id = vpc.id,
-                               route=[
+                               routes=[
                                    aws.ec2.RouteTableRouteArgs(
                                        cidr_block= "0.0.0.0/0",
                                        gateway_id= igw.id
@@ -86,6 +93,11 @@ def Createvpc(name, az = 2, cidr_block='10.0.0.0/16'):
                                tags = {
                                    "Name": f"{name}-public-rt"
                                })
+        rt_public_association= aws.ec2.RouteTableAssociation(
+            f"{name}-public-rt-association-{num}",
+            route_table_id=rt_public.id,
+            subnet_id= publicID[num]
+        )
     
         
     

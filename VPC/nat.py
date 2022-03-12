@@ -1,17 +1,23 @@
 import pulumi 
-from pulumi_aws import get_availability_zones
 import pulumi_aws as aws 
 
 def Create_nat(subnet_id,name):
-    public_nat_eip = aws.ec2.Eip(f'{name}-public-eip',
-                                 tags={
-                                     "Name": f"{name}-public-eip"
-                                 })
+    nat_gateway_id = []
+    nat_eip_id =[]
     
+    #create eip and nat 
     for n in range(len(subnet_id)):
-        aws.ec2.nat_gateway(f"{name}-natgateway-{n}",
+        nat_eip = aws.ec2.Eip(f'{name}-public-eip',
+                                    tags={
+                                        "Name": f"{name}-public-eip"
+                                    })
+        nat_eip_id.append(nat_eip.id)
+        
+        nat_gateway=aws.ec2.NatGateway(f"{name}-natgateway-{n}",
                     subnet_id= subnet_id[n],
-                    allocation_id=public_nat_eip.id,
+                    allocation_id=nat_eip_id[n],
                     tags={
                         "Name": f"{name}-natgateway-{n}"
                     })
+        nat_gateway_id.append(nat_gateway.id)
+    return nat_gateway_id
