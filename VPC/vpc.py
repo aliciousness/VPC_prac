@@ -2,6 +2,7 @@ import pulumi,ipaddress
 import pulumi_aws as aws 
 from pulumi_aws import get_availability_zones
 from .nat import Create_nat
+from .sg import Create_sg
 
 
 
@@ -98,7 +99,27 @@ def Createvpc(name, az = 2, cidr_block='10.0.0.0/16'):
             route_table_id=rt_public.id,
             subnet_id= publicID[num]
         )
-    
+    #network ACL NOT TESTED
+    acl = aws.ec2.NetworkAcl(f"{name}-networkACL",
+                             vpc_id=vpc.id,
+                             subnet_ids= [publicID,privateID],
+                             egress = [aws.ec2.NetworkAclEgressArgs(
+                                 protocol= "tcp",
+                                 rule_no=100,
+                                 
+                                 )],
+                             ingress=[aws.ec2.NetworkAclIngressArgs(
+                                protocol= "tcp",
+                                 rule_no=101, 
+                             )],
+                             tags={
+                                 "Name":f"{name}-networkACL"
+                             }
+                             
+                             )
+   
+    #security groups
+    Create_sg(vpc_id=vpc.id,name=name)
         
     
     
