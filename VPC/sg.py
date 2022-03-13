@@ -15,6 +15,13 @@ def Create_sg(vpc_id,name):
                                           to_port= 80,
                                           cidr_blocks=["0.0.0.0/0"]
                                         ),
+                                      ingress= ec2.SecurityGroupIngressArgs(
+                                          description= "SSH",
+                                          protocol= "tcp",
+                                          from_port=22,
+                                          to_port= 22,
+                                          cidr_blocks=["0.0.0.0/0"]
+                                        ),
                                       egress=ec2.SecurityGroupEgressArgs(
                                           description= "HTTPu",
                                           protocol= "tcp",
