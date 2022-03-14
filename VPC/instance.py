@@ -4,6 +4,7 @@ import pulumi_aws as aws
 from .sg import Create_sg
 
 def CreateInstance(vpc_id,public_subnet_id,private_subnet_id,name,az):
+    user_data = open('/Users/richard/VPC_prac/VPC/user-data.txt','r').read()
     sg = Create_sg(vpc_id,name)
     key= aws.ec2.KeyPair(f"{name}-keypair",
                          key_name = f"{name}-keypair",
@@ -21,7 +22,7 @@ def CreateInstance(vpc_id,public_subnet_id,private_subnet_id,name,az):
                                    vpc_security_group_ids = [sg["sg_public_id"]],
                                    subnet_id= public_subnet_id[n],
                                    key_name= key.tags_all["Name"],
-                                   user_data= "file://VPC/user-data-subnet-id.txt",
+                                   user_data= user_data,
                                    tags={
                                       "Name": f"{name}-public-instance",
                                       "Subnet": f"{public_subnet_id}",
@@ -44,6 +45,7 @@ def CreateInstance(vpc_id,public_subnet_id,private_subnet_id,name,az):
                                    )
         instance_private_id.append(instance_private.id)
         instance_public_id.append(instance_public.id)
+    
     return {
         'sg':sg,
         'public_instance_id': instance_public_id,
