@@ -1,6 +1,7 @@
 import pulumi
 from pulumi_aws import ec2 
 
+
 def Create_sg(vpc_id,name):
     sg_public = ec2.SecurityGroup(f"{name}-sg-public",
                                       description=f"This security group is for{name} in a public subnet",

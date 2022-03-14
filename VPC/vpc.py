@@ -2,7 +2,7 @@ import pulumi,ipaddress
 import pulumi_aws as aws 
 from pulumi_aws import get_availability_zones
 from .nat import Create_nat
-from .sg import Create_sg
+from .instance import CreateInstance
 
 
 
@@ -34,9 +34,6 @@ def Createvpc(name, az = 2, cidr_block='10.0.0.0/16'):
     #ID for subnets
     privateID = []
     publicID = []
-    
-    
-    
     #create subnets
     for n in range(az):
         #public subnet 
@@ -100,9 +97,8 @@ def Createvpc(name, az = 2, cidr_block='10.0.0.0/16'):
             subnet_id= publicID[num]
         )
   
-   
-    #security groups
-    Create_sg(vpc_id=vpc.id,name=name)
-        
+    
+    #instances
+    CreateInstance(vpc_id=vpc.id,name=name,public_subnet_id=publicID,private_subnet_id=privateID,az=az) 
     
     
