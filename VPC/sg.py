@@ -9,27 +9,29 @@ def Create_sg(vpc_id,name):
                                       tags={
                                           "Name": f"{name}-sg-public"
                                       },
-                                      ingress= ec2.SecurityGroupIngressArgs(
+                                      ingress= [
+                                        ec2.SecurityGroupIngressArgs(
                                           description= "HTTP",
                                           protocol= "tcp",
                                           from_port=80,
                                           to_port= 80,
                                           cidr_blocks=["0.0.0.0/0"]
                                         ),
-                                      ingress= ec2.SecurityGroupIngressArgs(
+                                        ec2.SecurityGroupIngressArgs(
                                           description= "SSH",
                                           protocol= "tcp",
                                           from_port=22,
                                           to_port= 22,
                                           cidr_blocks=["0.0.0.0/0"]
-                                        ),
-                                      egress=ec2.SecurityGroupEgressArgs(
-                                          description= "HTTPu",
+                                        )],
+                                      egress=[
+                                        ec2.SecurityGroupEgressArgs(
+                                          description= "HTTP",
                                           protocol= "tcp",
                                           from_port=80,
                                           to_port= 80,
                                           cidr_blocks=["0.0.0.0/0"]
-                                        ),
+                                        )],
                                       )
     sg_private = ec2.SecurityGroup(f"{name}-sg-private",
                                       description=f"This security group is for{name} in a private subnet",
@@ -37,13 +39,14 @@ def Create_sg(vpc_id,name):
                                       tags={
                                           "Name": f"{name}-sg-private"
                                       },
-                                      ingress= ec2.SecurityGroupIngressArgs(
-                                          description= "",
-                                          protocol= "HTTP tcp",
+                                      ingress= [
+                                        ec2.SecurityGroupIngressArgs(
+                                          description= "HTTP",
+                                          protocol= "tcp",
                                           from_port=80,
                                           to_port= 80,
                                           security_groups= [sg_public.id]
-                                        )
+                                        )]
                                       )
     return{
         "sg_public_id": sg_public.id,

@@ -15,13 +15,13 @@ def CreateInstance(vpc_id,public_subnet_id,private_subnet_id,name,az):
     instance_private_id=[]
     for n in range(az):
         instance_public= aws.ec2.Instance(f"{name}-public-instance",
-                                   ami = "0e1d30f2c40c4c701",
+                                   ami = "ami-0e1d30f2c40c4c701",
                                    instance_type="t2.micro",
                                    associate_public_ip_address= True,
                                    vpc_security_group_ids = [sg["sg_public_id"]],
                                    subnet_id= public_subnet_id[n],
-                                   key_name= key.name,
-                                   user_data= pulumi.FileArchive("user-data-subnet-id.txt.gz")
+                                   key_name= key.tags_all["Name"],
+                                   user_data= "file://VPC/user-data-subnet-id.txt",
                                    tags={
                                       "Name": f"{name}-public-instance",
                                       "Subnet": f"{public_subnet_id}",
@@ -30,7 +30,7 @@ def CreateInstance(vpc_id,public_subnet_id,private_subnet_id,name,az):
                                    }
                                    )
         instance_private= aws.ec2.Instance(f"{name}-private-instance",
-                                   ami = "0e1d30f2c40c4c701",
+                                   ami = "ami-0e1d30f2c40c4c701",
                                    instance_type="t2.micro",
                                    associate_public_ip_address= False,
                                    vpc_security_group_ids = [sg["sg_private_id"]],
