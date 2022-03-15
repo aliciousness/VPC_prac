@@ -15,7 +15,8 @@ def Createvpc(name, az = 2, cidr_block='10.0.0.0/16'):
     available = aws.get_availability_zones(state="available").names[:(az*2)]
     
     #create VPC 
-    vpc = aws.ec2.Vpc(f"{name}-vpc",                    cidr_block=cidr_block,
+    vpc = aws.ec2.Vpc(f"{name}-vpc",
+    cidr_block=cidr_block,
     enable_dns_hostnames= True,
     tags= {
         "Name": f"{name}"
