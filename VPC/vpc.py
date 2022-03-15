@@ -61,7 +61,7 @@ def Createvpc(name, az = 2, cidr_block='10.0.0.0/16'):
         privateID.append(private_subnet.id)
     
     #nat gateway
-    nat_id = Create_nat(name= name,subnet_id=publicID)
+    nat = Create_nat(name= name,subnet_id=publicID)
     
     for num in range(az):     
         rt_private = aws.ec2.RouteTable(f"{name}-private-rt-{num}",
@@ -69,7 +69,7 @@ def Createvpc(name, az = 2, cidr_block='10.0.0.0/16'):
                                routes=[
                                    aws.ec2.RouteTableRouteArgs(
                                        cidr_block= "0.0.0.0/0",
-                                       nat_gateway_id= nat_id[num]
+                                       nat_gateway_id= nat[num]
                                    )
                                ],
                                tags = {

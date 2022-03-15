@@ -46,7 +46,23 @@ def Create_sg(vpc_id,name):
                                           from_port=80,
                                           to_port= 80,
                                           security_groups= [sg_public.id]
-                                        )]
+                                        ),
+                                        ec2.SecurityGroupIngressArgs(
+                                          description= "SSH",
+                                          protocol= "tcp",
+                                          from_port=22,
+                                          to_port= 22,
+                                          cidr_blocks=["0.0.0.0/0"]
+                                        )],
+                                      egress=[
+                                        ec2.SecurityGroupIngressArgs(
+                                          description= "SSH",
+                                          protocol= "tcp",
+                                          from_port=22,
+                                          to_port= 22,
+                                          cidr_blocks=["0.0.0.0/0"]
+                                        )
+                                      ]
                                       )
     return{
         "sg_public_id": sg_public.id,

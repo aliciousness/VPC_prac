@@ -36,6 +36,8 @@ def CreateInstance(vpc_id,public_subnet_id,private_subnet_id,name,az):
                                    associate_public_ip_address= False,
                                    vpc_security_group_ids = [sg["sg_private_id"]],
                                    subnet_id= private_subnet_id[n],
+                                   key_name= key.tags_all["Name"],
+                                   user_data= user_data,
                                    tags={
                                       "Name": f"{name}-private-instance",
                                       "Subnet": f"{private_subnet_id}",
