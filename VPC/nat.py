@@ -20,4 +20,11 @@ def Create_nat(subnet_id,name):
                         "Name": f"{name}-natgateway-{n}"
                     })
         nat_gateway_id.append(nat_gateway.id)
+        
+    pulumi.export("NAT", {
+        "ID": nat_gateway.id,
+        "private_ip":nat_gateway.private_ip,
+        "public": nat_gateway.public_ip
+    })
+    
     return nat_gateway_id

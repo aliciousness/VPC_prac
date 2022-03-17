@@ -22,8 +22,6 @@ def Createvpc(name, az = 2, cidr_block='10.0.0.0/16'):
         "Name": f"{name}"
     })
     
-    pulumi.export("vpc arn", vpc.arn)
-    pulumi.export("id", vpc.id)
     
     #internet gateway
     igw = aws.ec2.InternetGateway(f'{name}-igw',
@@ -101,5 +99,14 @@ def Createvpc(name, az = 2, cidr_block='10.0.0.0/16'):
     
     #instances
     CreateInstance(vpc_id=vpc.id,name=name,public_subnet_id=publicID,private_subnet_id=privateID,az=az) 
+    
+    pulumi.export("VPC",{
+        "vpc arn": vpc.arn,
+        "subnet": {
+         "private": private_subnet.arn,
+         "public": public_subnet.arn},
+        "IGW": igw.arn
+    
+    })
     
     

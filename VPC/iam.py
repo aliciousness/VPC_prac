@@ -1,11 +1,10 @@
+from inspect import ArgInfo
 import pulumi,json
 import pulumi_aws as aws 
 
-#BUG Trying to attach a role to an instance but i cant find an argument in pulumi to accept roles to instance, check back here 
 
 
-
-def role(name,vpc_name):
+def CreateRole(name):
     
     role_vpc = aws.iam.Role(f"EC2-role-{name}",
                             assume_role_policy=json.dumps({
@@ -25,5 +24,18 @@ def role(name,vpc_name):
     role_policy_attachment = aws.iam.RolePolicyAttachment(f"{name}-role-policy-attachment",
                                                           role=role_vpc.name,
                                                           policy_arn=aws.iam.ManagedPolicy.AMAZON_SSM_MANAGED_INSTANCE_CORE)
+    
+    instance_profile = aws.iam.InstanceProfile("instance-role",
+                                               name_prefix=f"{name}",
+                                               path="/",
+                                               role= role_vpc.name)
+    
+    pulumi.export("IAM",
+                  {
+                      "instance_profile": instance_profile.arn,
+                      "role_arn": role_vpc.arn,
+                  })
+    
+    return instance_profile.name
     
                                            
