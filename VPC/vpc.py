@@ -7,7 +7,7 @@ from .instance import CreateInstance
 
 
 #function to create vpc and dependencies, cidr block defaulted as well as az
-def Createvpc(name, az = 2, cidr_block='10.0.0.0/16'):
+def Createvpc(name, az = 1, cidr_block='10.0.0.0/16'):
     
     subnet = list(ipaddress.ip_network(cidr_block).subnets(new_prefix=24))
     
@@ -22,6 +22,8 @@ def Createvpc(name, az = 2, cidr_block='10.0.0.0/16'):
         "Name": f"{name}"
     })
     
+    pulumi.export("vpc arn", vpc.arn)
+    pulumi.export("id", vpc.id)
     
     #internet gateway
     igw = aws.ec2.InternetGateway(f'{name}-igw',
@@ -33,6 +35,7 @@ def Createvpc(name, az = 2, cidr_block='10.0.0.0/16'):
     #ID for subnets
     privateID = []
     publicID = []
+    
     #create subnets
     for n in range(az):
         #public subnet 
@@ -63,7 +66,7 @@ def Createvpc(name, az = 2, cidr_block='10.0.0.0/16'):
     nat = Create_nat(name= name,subnet_id=publicID)
     
     for num in range(az):     
-        rt_private = aws.ec2.RouteTable(f"{name}-private-rt-{num}",
+        rt_private = aws.ec2.RouteTable(f"{name}-private-subnet-rt",
                                vpc_id = vpc.id,
                                routes=[
                                    aws.ec2.RouteTableRouteArgs(
@@ -99,14 +102,5 @@ def Createvpc(name, az = 2, cidr_block='10.0.0.0/16'):
     
     #instances
     CreateInstance(vpc_id=vpc.id,name=name,public_subnet_id=publicID,private_subnet_id=privateID,az=az) 
-    
-    pulumi.export("VPC",{
-        "vpc arn": vpc.arn,
-        "subnet": {
-         "private": private_subnet.arn,
-         "public": public_subnet.arn},
-        "IGW": igw.arn
-    
-    })
     
     

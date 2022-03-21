@@ -1,4 +1,3 @@
-from ast import arguments
 import pulumi
 from pulumi_aws import ec2 
 
@@ -57,10 +56,6 @@ def Create_sg(vpc_id,name):
                                         )]
                                    
                                       )
-    pulumi.export("Security-groups", {
-      "public": sg_public.arn,
-      "private": sg_private.arn
-    })
     return{
         "sg_public_id": sg_public.id,
         "sg_private_id": sg_private.id

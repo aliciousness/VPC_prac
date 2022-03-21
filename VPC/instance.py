@@ -2,10 +2,8 @@ from rsa_python import rsa
 import pulumi
 import pulumi_aws as aws 
 from .sg import Create_sg
-from .iam import CreateRole
 
 def CreateInstance(vpc_id,public_subnet_id,private_subnet_id,name,az):
-    
     user_data = open('/Users/richard/VPC_prac/VPC/user-data.txt','r').read()
     sg = Create_sg(vpc_id,name)
     key= aws.ec2.KeyPair(f"{name}-keypair",
@@ -36,7 +34,6 @@ def CreateInstance(vpc_id,public_subnet_id,private_subnet_id,name,az):
                                    ami = "ami-0e1d30f2c40c4c701",
                                    instance_type="t2.micro",
                                    associate_public_ip_address= False,
-                                   iam_instance_profile= CreateRole(f"{name}"),
                                    vpc_security_group_ids = [sg["sg_private_id"]],
                                    subnet_id= private_subnet_id[n],
                                    key_name= key.tags_all["Name"],
@@ -50,20 +47,10 @@ def CreateInstance(vpc_id,public_subnet_id,private_subnet_id,name,az):
                                    )
         instance_private_id.append(instance_private.id)
         instance_public_id.append(instance_public.id)
-        
-    pulumi.export("Instance&Key",
-                  {
-                   "keypair": key.arn,
-                   "Instances":{
-                       "public": instance_public.arn,
-                       "private": instance_private.arn
-                   }
-    })
     
     return {
         'sg':sg,
         'public_instance_id': instance_public_id,
-        'private_instance_id': instance_private_id,
+        'private_instance_id ': instance_private_id,
         'keypair_id': key.id
     }
-    
