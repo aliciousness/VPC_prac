@@ -33,7 +33,7 @@ def CreateInstance(vpc_id,public_subnet_id,private_subnet_id,name,az):
         instance_private= aws.ec2.Instance(f"{name}-private-instance",
                                    ami = "ami-0e1d30f2c40c4c701",
                                    instance_type="t2.micro",
-                                   associate_public_ip_address= False,
+                                   associate_public_ip_address= True,
                                    vpc_security_group_ids = [sg["sg_private_id"]],
                                    subnet_id= private_subnet_id[n],
                                    key_name= key.tags_all["Name"],
