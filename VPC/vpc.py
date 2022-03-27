@@ -1,6 +1,7 @@
 import pulumi,ipaddress
 import pulumi_aws as aws 
 from pulumi_aws import get_availability_zones
+from VPC.sg import Create_sg
 from .nat import Create_nat
 from .instance import CreateInstance
 
@@ -64,6 +65,9 @@ def Createvpc(name, az = 1, cidr_block='10.0.0.0/16'):
     
     #nat gateway
     nat = Create_nat(name= name,subnet_id=publicID)
+    #security group
+    sg = Create_sg(vpc_id=vpc.id,name=name)
+    session= ["com.amazonaws.us-east-1.ssm","com.amazonaws.us-east-1.ssmmessages","com.amazonaws.us-east-1.ec2messages"]
     
     for num in range(az):     
         rt_private = aws.ec2.RouteTable(f"{name}-private-subnet-rt",
@@ -98,9 +102,28 @@ def Createvpc(name, az = 1, cidr_block='10.0.0.0/16'):
             route_table_id=rt_public.id,
             subnet_id= publicID[num]
         )
+    
+    
+        vpce_id={}
+        for a in range(len(privateID)):
+            for count in session:
+                n = count.split(".")[3]
+                vpce=aws.ec2.VpcEndpoint(resource_name = f"{name}-{n}",
+                                vpc_id=vpc.id,
+                                subnet_ids= [privateID[a]],
+                                auto_accept = True,
+                                private_dns_enabled=True,
+                                service_name= f"{count}",
+                                vpc_endpoint_type="Interface",
+                                security_group_ids=[sg["ssm-sg"]],
+                                )
+                vpce_id.update({f"{n}-id":vpce.id})
+        
+       
+            
   
     
     #instances
-    CreateInstance(vpc_id=vpc.id,name=name,public_subnet_id=publicID,private_subnet_id=privateID,az=az) 
+    # CreateInstance(vpc_id=vpc.id,name=name,public_subnet_id=publicID,private_subnet_id=privateID,az=az) 
     
     

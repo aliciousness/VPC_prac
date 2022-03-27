@@ -1,3 +1,4 @@
+from unicodedata import name
 import pulumi
 from pulumi_aws import ec2 
 
@@ -39,25 +40,38 @@ def Create_sg(vpc_id,name):
                                       tags={
                                           "Name": f"{name}-sg-private"
                                       },
-                                      ingress= [
-                                        # ec2.SecurityGroupIngressArgs(
-                                        #   description= "HTTP",
-                                        #   protocol= "tcp",
-                                        #   from_port=80,
-                                        #   to_port= 80,
-                                        #   security_groups= [sg_public.id]
-                                        # ),
-                                        # ec2.SecurityGroupIngressArgs(
-                                        #   description= "SSH",
-                                        #   protocol= "tcp",
-                                        #   from_port=22,
-                                        #   to_port= 22,
-                                        #   cidr_blocks=["0.0.0.0/0"]
-                                        #  )
-                                      ]
-                                   
                                       )
+    ssm_session_sg = ec2.SecurityGroup(f"ssm-session-vpce-sg-{name}",
+                                    description="SG for ssm session vpce",
+                                    vpc_id=vpc_id,
+                                    ingress=[ec2.SecurityGroupIngressArgs(
+                                        description="HTTPS ipv4",
+                                        from_port=443,
+                                        to_port=443,
+                                        protocol="tcp",
+                                        cidr_blocks=['0.0.0.0/0']
+                                    ),
+                                             ec2.SecurityGroupIngressArgs(
+                                        description="HTTPS ipv6",
+                                        from_port=443,
+                                        to_port=443,
+                                        protocol="tcp",
+                                        ipv6_cidr_blocks=['::/0']
+                                    )
+                                             ],
+                                    egress=[ec2.SecurityGroupIngressArgs(
+                                        description="HTTPS ipv4",
+                                        from_port=443,
+                                        to_port=443,
+                                        protocol="tcp",
+                                        cidr_blocks=['0.0.0.0/0']
+                                    )],
+                                    tags={
+                                        "Name": f'{name}-ssm-vpce-sg'
+                                    }
+                                    )
     return{
         "sg_public_id": sg_public.id,
-        "sg_private_id": sg_private.id
+        "sg_private_id": sg_private.id,
+        "ssm-sg": ssm_session_sg.id
     }

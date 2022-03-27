@@ -24,11 +24,13 @@ def CreateRole(name):
     role_policy_attachment = aws.iam.RolePolicyAttachment(f"{name}-role-policy-attachment",
                                                           role=role_vpc.name,
                                                           policy_arn=aws.iam.ManagedPolicy.AMAZON_SSM_MANAGED_INSTANCE_CORE)
-    
-    instance_profile = aws.iam.InstanceProfile("instance-role",
-                                               name_prefix=f"{name}",
-                                               path="/",
-                                               role= role_vpc.name)
+    instance_profile = aws.iam.get_role(
+                                                   name="SSMInstanceProfile-pulumi",
+                                                                    arn = "arn:aws:iam::037484876593:instance-profile/SSMInstanceProfile-pulumi" )
+    # instance_profile = aws.iam.InstanceProfile("ssm-instance-role",
+    #                                            name_prefix=f"{name}",
+    #                                            path="/",
+    #                                            role= role_vpc.name)
     
     pulumi.export("IAM",
                   {
@@ -38,4 +40,7 @@ def CreateRole(name):
     
     return instance_profile.name
     
-                                           
+  
+  
+  
+                                   
