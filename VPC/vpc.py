@@ -2,8 +2,7 @@ import pulumi,ipaddress
 import pulumi_aws as aws 
 from pulumi_aws import get_availability_zones
 from VPC.sg import Create_sg
-from .nat import Create_nat
-from .instance import CreateInstance
+
 
 
 
