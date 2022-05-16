@@ -2,6 +2,7 @@ import pulumi,ipaddress
 import pulumi_aws as aws 
 from pulumi_aws import get_availability_zones
 from VPC.sg import Create_sg
+from VPC.nat import Create_nat
 
 
 
@@ -22,8 +23,7 @@ def Createvpc(name, az = 1, cidr_block='10.0.0.0/16'):
         "Name": f"{name}"
     })
     
-    pulumi.export("vpc arn", vpc.arn)
-    pulumi.export("id", vpc.id)
+    
     
     #internet gateway
     igw = aws.ec2.InternetGateway(f'{name}-igw',
@@ -119,10 +119,10 @@ def Createvpc(name, az = 1, cidr_block='10.0.0.0/16'):
                 vpce_id.update({f"{n}-id":vpce.id})
         
        
-            
+        pulumi.export("vpc arn", vpc.arn)
+        pulumi.export("id", vpc.id)   
   
     
-    #instances
-    # CreateInstance(vpc_id=vpc.id,name=name,public_subnet_id=publicID,private_subnet_id=privateID,az=az) 
+    
     
     
